@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>诗笺 · 古诗词学习工作台</title>
+<meta name="description" content="内置 80 首经典诗词的离线学习工具：卡片速览、艾宾浩斯背诵计划、默写自测、飞花令检索。">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">诗 笺</div>
+    <div class="brand-sub">古 诗 词 学 习 工 作 台</div>
+    <div class="seal">80 首 · 离线可用</div>
+  </header>
+
+  <nav>
+    <button class="on" data-t="library" onclick="switchTab('library')">诗词库</button>
+    <button data-t="recite" onclick="switchTab('recite')">背诵本</button>
+    <button data-t="feihua" onclick="switchTab('feihua')">飞花令</button>
+    <button data-t="about" onclick="switchTab('about')">关于</button>
+  </nav>
+
+  <div class="hero" id="hero"></div>
+
+  <!-- 诗词库 -->
+  <section class="page" id="page-library">
+    <div class="toolbar">
+      <input class="search" id="search" placeholder="搜标题、作者、句子、题材，比如「月」「思乡」">
+      <button class="btn" onclick="document.getElementById('search').value='';kw='';renderGrid()">清空</button>
+    </div>
+    <div class="filterbox" id="filters"></div>
+    <div class="sec-title">全部<span id="count"></span></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- 背诵本 -->
+  <section class="page" id="page-recite" style="display:none">
+    <div id="recite"></div>
+  </section>
+
+  <!-- 飞花令 -->
+  <section class="page" id="page-feihua" style="display:none">
+    <div class="sec-title">飞花令<span>输入一个字，找出诗库里所有含它的句子</span></div>
+    <div class="fh-input-row">
+      <input class="fh-input" id="fhInput" maxlength="1" placeholder="月">
+      <button class="btn red" onclick="renderFeihua()">检索</button>
+    </div>
+    <div class="fh-hint">点任意一句可跳到原诗全文</div>
+    <div class="fh-list" id="fhList"></div>
+  </section>
+
+  <!-- 关于 -->
+  <section class="page about" id="page-about" style="display:none">
+    <div class="sec-title">这个工具是什么</div>
+    <p>一个离线运行的古诗词学习工作台。诗库内置 80 首经典篇目，每首配一句赏读；加入背诵本后，按艾宾浩斯遗忘曲线自动排复习，到期就会出现「今日该复习」清单。</p>
+    <p>四个功能：<b>诗词库</b>（按朝代、题材、关键词检索）、<b>背诵本</b>（自动排期 + 默写自测）、<b>飞花令</b>（单字检索诗句）、<b>今日推荐</b>（每天换一首）。</p>
+
+    <div class="sec-title">我的数据存在哪</div>
+    <p>全部存在你这台浏览器的本地存储里（<code>localStorage</code>），不联网、不上传、不注册。换设备或换浏览器请用下面的导出 / 导入搬家；<b>清空浏览器数据会一并清掉背诵记录</b>，重要进度记得导出备份。</p>
+    <div class="sheet-acts" style="margin-bottom:20px">
+      <button class="btn red" onclick="exportData()">导出记录</button>
+      <button class="btn" onclick="document.getElementById('impFile').click()">导入记录</button>
+      <input type="file" id="impFile" accept=".json" style="display:none"
+             onchange="importData(this.files[0]);this.value=''">
+    </div>
+
+    <div class="sec-title">学习进度<span id="stats"></span></div>
+
+    <div class="sec-title">技术实现</div>
+    <p>纯静态页面，零依赖、零构建：HTML + 原生 CSS + 原生 JavaScript，诗库是一个本地 JS 数据文件。双击 <code>index.html</code> 就能用，也可以直接托管到任何静态服务器上。</p>
+  </section>
+
+  <footer>诗笺 · 用 AI 辅助搭建的古诗词学习工作台</footer>
+</div>
+
+<div class="mask" id="mask"><div class="sheet" id="sheet"></div></div>
+
+<script src="data/poems.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
