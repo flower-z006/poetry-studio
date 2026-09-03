@@ -420,11 +420,13 @@ function drawCard(p) {
   ctx.fillStyle = th.ink; ctx.font = '400 21px "Songti SC","SimSun",serif';
   bodyLines.forEach(function (l) { ctx.fillText(l, cx, y + 26); y += 38; });
   y += 14;
-  // 赏读
+  // 赏读（水平居中）
   if (p.notes) {
-    ctx.fillStyle = th.line; ctx.fillRect(pad, y - 18, 3, notesLines.length * 26 + 8);
+    ctx.strokeStyle = th.line; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - 22, y - 16); ctx.lineTo(cx + 22, y - 16); ctx.stroke();
     ctx.fillStyle = th.sub; ctx.font = '400 15px "PingFang SC","Microsoft YaHei",sans-serif';
-    notesLines.forEach(function (l) { ctx.fillText(l, pad + 14, y); y += 26; });
+    ctx.textAlign = "center";
+    notesLines.forEach(function (l) { ctx.fillText(l, cx, y); y += 26; });
     y += 20;
   }
   // 页脚：产品名 + 印章
