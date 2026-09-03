@@ -440,7 +440,11 @@ function drawCard(p) {
   // 同步到展示用图片（响应式、手机可长按保存），并缓存供下载
   cardDataURL = cv.toDataURL("image/png");
   var cp = document.getElementById("cardImg");
-  if (cp) cp.src = cardDataURL;
+  if (cp) {
+    cp.width = cv.width;        // 显式固有宽高，防手机 WebView 把图拉变形
+    cp.height = cv.height;
+    cp.src = cardDataURL;
+  }
 }
 
 function openCard(id) {
