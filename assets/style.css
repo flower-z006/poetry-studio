@@ -200,7 +200,7 @@ footer{text-align:center;margin-top:60px;padding-top:24px;border-top:1px solid v
 .card-title{font-size:14px;color:var(--ink-2);margin-bottom:14px;font-family:var(--sans);letter-spacing:.18em}
 #cardCanvas{display:none}
 .card-img{
-  width:100%;max-width:340px;height:auto;border:1px solid var(--line);border-radius:3px;
+  width:100%;height:auto;border:1px solid var(--line);border-radius:3px;
   display:block;margin:0 auto;box-shadow:0 6px 20px rgba(0,0,0,.08);
   -webkit-touch-callout:default; /* 允许手机长按弹出"保存图片" */
 }
