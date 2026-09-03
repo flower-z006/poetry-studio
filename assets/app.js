@@ -133,6 +133,7 @@ function openDetail(id) {
     '<div class="sheet-acts">' +
       '<button class="btn red" onclick="startQuiz(\'' + id + '\')">默写自测</button>' +
       '<button class="btn" onclick="toggleRec(\'' + id + '\')">' + (inRec ? "移出背诵本" : "加入背诵本") + "</button>" +
+      '<button class="btn" onclick="openCard(\'' + id + '\')">生成分享卡片</button>' +
       '<button class="btn" onclick="closeSheet()">收起</button>' +
     "</div>";
   $("#mask").classList.add("show");
@@ -346,6 +347,116 @@ function switchTab(name) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/* ---------- 13.5 分享卡片生成器（产品化核心） ---------- */
+// 三种底色：宣纸 / 墨夜 / 青绿，点「换底色」循环切换
+var CARD_THEMES = [
+  { name:"宣纸", bg:"#F6F1E6", ink:"#2C2A26", sub:"#8C8577", line:"#E2DBCB", seal:"#A8352A" },
+  { name:"墨夜", bg:"#23211D", ink:"#F1ECE1", sub:"#A89E8C", line:"#3A362F", seal:"#C9705F" },
+  { name:"青绿", bg:"#EAF0EE", ink:"#243530", sub:"#5E726C", line:"#C8D6D1", seal:"#4A6660" }
+];
+var cardThemeIdx = 0;
+var cardPoem = null;
+
+// 按像素宽度自动换行，返回多行
+function wrapText(ctx, text, maxW) {
+  var lines = [], cur = "";
+  for (var i = 0; i < text.length; i++) {
+    var t = cur + text[i];
+    if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = text[i]; }
+    else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function drawCard(p) {
+  var th = CARD_THEMES[cardThemeIdx];
+  var W = 680, pad = 52, scale = 2; // 2 倍像素 = 高清图
+  var cv = document.getElementById("cardCanvas");
+  var ctx = cv.getContext("2d");
+
+  // 第一遍：量高度（canvas 必须先定高才能画）
+  ctx.font = '600 30px "Songti SC","SimSun",serif';
+  var titleH = 30, metaH = 18;
+  ctx.font = '400 21px "Songti SC","SimSun",serif';
+  var bodyLines = [];
+  p.content.forEach(function (line) {
+    wrapText(ctx, line, W - pad * 2).forEach(function (l) { bodyLines.push(l); });
+  });
+  var bodyH = bodyLines.length * 38;
+  var notesLines = [];
+  if (p.notes) {
+    ctx.font = '400 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    p.notes.split("\n").forEach(function (nl) {
+      wrapText(ctx, nl, W - pad * 2 - 24).forEach(function (l) { notesLines.push(l); });
+    });
+  }
+  var notesH = notesLines.length * 26 + (p.notes ? 28 : 0);
+  var H = pad + titleH + 14 + metaH + 26 + bodyH + (notesH ? notesH + 20 : 0) + 70;
+
+  cv.width = W * scale; cv.height = H * scale;
+  cv.style.width = W + "px"; cv.style.height = H + "px";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(scale, scale);
+
+  // 背景 + 细边框
+  ctx.fillStyle = th.bg; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = th.line; ctx.lineWidth = 1;
+  ctx.strokeRect(pad / 2, pad / 2, W - pad, H - pad);
+
+  var cx = W / 2, y = pad + 6;
+  ctx.textBaseline = "alphabetic";
+
+  // 标题
+  ctx.fillStyle = th.ink; ctx.textAlign = "center";
+  ctx.font = '600 30px "Songti SC","SimSun",serif';
+  ctx.fillText(p.title, cx, y + titleH);
+  y += titleH + 14;
+  // 元信息
+  ctx.fillStyle = th.sub; ctx.font = '400 16px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.fillText(p.dynasty + " · " + p.author + " · " + p.genre, cx, y + metaH);
+  y += metaH + 26;
+  // 正文
+  ctx.fillStyle = th.ink; ctx.font = '400 21px "Songti SC","SimSun",serif';
+  bodyLines.forEach(function (l) { ctx.fillText(l, cx, y + 26); y += 38; });
+  y += 14;
+  // 赏读
+  if (p.notes) {
+    ctx.fillStyle = th.line; ctx.fillRect(pad, y - 18, 3, notesLines.length * 26 + 8);
+    ctx.fillStyle = th.sub; ctx.font = '400 15px "PingFang SC","Microsoft YaHei",sans-serif';
+    notesLines.forEach(function (l) { ctx.fillText(l, pad + 14, y); y += 26; });
+    y += 20;
+  }
+  // 页脚：产品名 + 印章
+  ctx.fillStyle = th.sub; ctx.font = '400 14px "PingFang SC","Microsoft YaHei",sans-serif';
+  ctx.textAlign = "left";
+  ctx.fillText("诗笺 · 古诗词学习工作台", pad, H - pad + 6);
+  ctx.strokeStyle = th.seal; ctx.lineWidth = 2;
+  ctx.strokeRect(W - pad - 40, H - pad - 18, 34, 34);
+  ctx.fillStyle = th.seal; ctx.font = '600 20px "Songti SC","SimSun",serif';
+  ctx.textAlign = "center";
+  ctx.fillText("笺", W - pad - 23, H - pad + 6);
+}
+
+function openCard(id) {
+  var p = findPoem(id); if (!p) return;
+  cardPoem = p; cardThemeIdx = 0;
+  drawCard(p);
+  document.getElementById("cardMask").classList.add("show");
+}
+function closeCard() { document.getElementById("cardMask").classList.remove("show"); }
+function cycleCardTheme() {
+  cardThemeIdx = (cardThemeIdx + 1) % CARD_THEMES.length;
+  if (cardPoem) drawCard(cardPoem);
+}
+function downloadCard() {
+  var cv = document.getElementById("cardCanvas");
+  var a = document.createElement("a");
+  a.href = cv.toDataURL("image/png");
+  a.download = "诗笺-" + (cardPoem ? cardPoem.title : "卡片") + ".png";
+  a.click();
+}
+
 /* ---------- 14. 启动 ---------- */
 load();
 renderHero();
@@ -357,4 +468,5 @@ renderStats();
 $("#search").addEventListener("input", function (e) { kw = e.target.value.trim(); renderGrid(); });
 $("#fhInput").addEventListener("input", renderFeihua);
 $("#mask").addEventListener("click", function (e) { if (e.target.id === "mask") closeSheet(); });
-document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeSheet(); closeCard(); } });
+$("#cardMask").addEventListener("click", function (e) { if (e.target.id === "cardMask") closeCard(); });

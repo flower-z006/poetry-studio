@@ -78,6 +78,20 @@
 
 <div class="mask" id="mask"><div class="sheet" id="sheet"></div></div>
 
+<div class="mask" id="cardMask">
+  <div class="card-sheet">
+    <button class="sheet-close" onclick="closeCard()">×</button>
+    <div class="card-title">诗 笺 分 享 卡 片</div>
+    <canvas id="cardCanvas"></canvas>
+    <div class="card-acts">
+      <button class="btn" onclick="cycleCardTheme()">换底色</button>
+      <button class="btn red" onclick="downloadCard()">下载图片</button>
+      <button class="btn" onclick="closeCard()">关闭</button>
+    </div>
+    <div class="card-tip">下载后是高清 PNG，直接发小红书 / 朋友圈引流</div>
+  </div>
+</div>
+
 <script src="data/poems.js"></script>
 <script src="assets/app.js"></script>
 </body>
