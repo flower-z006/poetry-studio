@@ -198,9 +198,11 @@ footer{text-align:center;margin-top:60px;padding-top:24px;border-top:1px solid v
   padding:24px 24px 20px;text-align:center;position:relative;border:1px solid var(--line-2);margin:auto;
 }
 .card-title{font-size:14px;color:var(--ink-2);margin-bottom:14px;font-family:var(--sans);letter-spacing:.18em}
-#cardCanvas{
+#cardCanvas{display:none}
+.card-img{
   width:100%;max-width:340px;height:auto;border:1px solid var(--line);border-radius:3px;
   display:block;margin:0 auto;box-shadow:0 6px 20px rgba(0,0,0,.08);
+  -webkit-touch-callout:default; /* 允许手机长按弹出"保存图片" */
 }
 .card-acts{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .card-tip{font-size:12px;color:var(--ink-3);margin-top:10px;font-family:var(--sans)}

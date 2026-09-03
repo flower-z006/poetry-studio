@@ -356,6 +356,7 @@ var CARD_THEMES = [
 ];
 var cardThemeIdx = 0;
 var cardPoem = null;
+var cardDataURL = ""; // 画完后生成的 PNG 数据，供展示与下载复用
 
 // 按像素宽度自动换行，返回多行
 function wrapText(ctx, text, maxW) {
@@ -395,7 +396,6 @@ function drawCard(p) {
   var H = pad + titleH + 14 + metaH + 26 + bodyH + (notesH ? notesH + 20 : 0) + 70;
 
   cv.width = W * scale; cv.height = H * scale;
-  cv.style.width = W + "px"; cv.style.height = H + "px";
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(scale, scale);
 
@@ -436,6 +436,11 @@ function drawCard(p) {
   ctx.fillStyle = th.seal; ctx.font = '600 20px "Songti SC","SimSun",serif';
   ctx.textAlign = "center";
   ctx.fillText("笺", W - pad - 23, H - pad + 6);
+
+  // 同步到展示用图片（响应式、手机可长按保存），并缓存供下载
+  cardDataURL = cv.toDataURL("image/png");
+  var cp = document.getElementById("cardImg");
+  if (cp) cp.src = cardDataURL;
 }
 
 function openCard(id) {
@@ -450,11 +455,13 @@ function cycleCardTheme() {
   if (cardPoem) drawCard(cardPoem);
 }
 function downloadCard() {
-  var cv = document.getElementById("cardCanvas");
+  if (!cardDataURL) return;
   var a = document.createElement("a");
-  a.href = cv.toDataURL("image/png");
+  a.href = cardDataURL;
   a.download = "诗笺-" + (cardPoem ? cardPoem.title : "卡片") + ".png";
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 /* ---------- 14. 启动 ---------- */
